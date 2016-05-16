@@ -15,7 +15,6 @@ var User = db.Model.extend({
       // model.set('code', shasum.digest('hex').slice(0, 5));
       // model.set('username', model.get('username'));
       console.log('IN INITIALIZE');
-      model.set('username', 'albert');
     });
   }
 });

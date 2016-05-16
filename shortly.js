@@ -85,33 +85,24 @@ app.post('/signup',
 function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
-console.log(username,password)
 
-  // if (!util.isValidUrl(uri)) {
-  //   console.log('Not a valid url: ', uri);
-  //   return res.sendStatus(404);
-  // }
-// console.log( new User({username:username}) )
-
+  // Checks if user exists, then...
   new User({username: username}).fetch().then(function(found) {
+    // if found...
     if (found) {
       res.status(200).send(found.attributes);
-    } else {
+    } else { // else need to create...
       console.log(username, password);
-      // util.getUrlTitle(uri, function(err, title) {
-      //   if (err) {
-      //     console.log('Error reading URL heading: ', err);
-      //     return res.sendStatus(404);
-      //   }
 
       Users.create({
         username: username,
         password: password,
       })
-      .then(function(newLink) {
-        res.status(200).send(newLink);
+      .then(function() {
+
+        res.redirect('/');
+        res.end();
       });
-      // });
     }
   });
 });
@@ -123,7 +114,19 @@ function(req, res) {
 
 app.post('/login', 
 function(req, res) {
-  res.render('login');
+  var username = req.body.username;
+  var password = req.body.password;
+
+  // Checks if user exists, then...
+  new User({username: username}).fetch().then(function(found) {
+    // if found...
+    if (found) {
+      res.redirect('/');
+    } else { // else need to create...
+      res.redirect('/login');
+      res.end();
+    }
+  });
 });
 
 
