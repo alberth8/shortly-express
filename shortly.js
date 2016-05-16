@@ -76,6 +76,55 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.get('/signup', 
+function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', 
+function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+console.log(username,password)
+
+  // if (!util.isValidUrl(uri)) {
+  //   console.log('Not a valid url: ', uri);
+  //   return res.sendStatus(404);
+  // }
+// console.log( new User({username:username}) )
+
+  new User({username: username}).fetch().then(function(found) {
+    if (found) {
+      res.status(200).send(found.attributes);
+    } else {
+      console.log(username, password);
+      // util.getUrlTitle(uri, function(err, title) {
+      //   if (err) {
+      //     console.log('Error reading URL heading: ', err);
+      //     return res.sendStatus(404);
+      //   }
+
+      Users.create({
+        username: username,
+        password: password,
+      })
+      .then(function(newLink) {
+        res.status(200).send(newLink);
+      });
+      // });
+    }
+  });
+});
+
+app.get('/login', 
+function(req, res) {
+  res.render('login');
+});
+
+app.post('/login', 
+function(req, res) {
+  res.render('login');
+});
 
 
 /************************************************************/
