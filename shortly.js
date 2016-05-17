@@ -29,6 +29,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
+app.get('/logout', function (req, res) {
+  req.session.destroy(function() {
+    res.redirect('/login');
+  });
+});
 
 app.get('/', 
 function(req, res) {
@@ -60,8 +65,7 @@ function(req, res) {
     if (req.session.userId) {
       res.status(200).send(links.models); // only send current users link !
     } else { 
-      console.log('403!');
-      res.status(403).end();
+      res.redirect('/login');
     }
   });
 });
