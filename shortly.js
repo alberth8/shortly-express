@@ -2,6 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+// var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -17,26 +19,50 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
 // Parse JSON (uniform resource locators)
+// app.use(cookieParser());
+app.use(session({secret: 'awesomebullets'}));
+
+
 app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
+
 app.get('/', 
 function(req, res) {
-  res.render('index');
+  // console.log("COOKIES:", req.cookies);
+  console.log('SESSION:', req.session);
+
+  if (req.session.userId) {
+    res.render('index');
+    // show your saved files
+  } else {
+    res.redirect('/login');
+  }
+
 });
 
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  if (req.session.userId) {
+    res.render('index'); 
+    // show your saved files
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/links', 
 function(req, res) {
   Links.reset().fetch().then(function(links) {
-    res.status(200).send(links.models);
+    if (req.session.userId) {
+      res.status(200).send(links.models); // only send current users link !
+    } else { 
+      console.log('403!');
+      res.status(403).end();
+    }
   });
 });
 
@@ -92,7 +118,6 @@ function(req, res) {
     if (found) {
       res.status(200).send(found.attributes);
     } else { // else need to create...
-      console.log(username, password);
 
       Users.create({
         username: username,
@@ -112,18 +137,41 @@ function(req, res) {
   res.render('login');
 });
 
+/// test
+app.get('/test', 
+function(req, res) {
+  console.log('CURRENT SESSION: ', req.session);
+  res.end();
+});
+
 app.post('/login', 
 function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
 
+  var authenticate = function (password, storedUser) {
+    // if entered password is same as what's in the server
+    if (password === storedUser.attributes.password) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+
+
+
   // Checks if user exists, then...
   new User({username: username}).fetch().then(function(found) {
     // if found...
-    if (found) {
+    if (found && authenticate(password, found)) {
+      req.session.userId = found.attributes.id;
+      console.log('Updated?', req.session);
       res.redirect('/');
     } else { // else need to create...
+      console.log('failed');
       res.redirect('/login');
+      // if link is /create -> /login
       res.end();
     }
   });
