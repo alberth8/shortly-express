@@ -31,6 +31,7 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
       click.increments('id').primary();
       click.integer('linkId');
       click.timestamps();
+      /// might need this to have forein key of use
     }).then(function (table) {
       console.log('Created Table', table);
     });

@@ -63,6 +63,7 @@ app.get('/links',
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     if (req.session.userId) {
+      console.log(links.models);
       res.status(200).send(links.models); // only send current users link !
     } else { 
       res.redirect('/login');
@@ -70,7 +71,7 @@ function(req, res) {
   });
 });
 
-app.post('/links', 
+app.post('/links',  
 function(req, res) {
   var uri = req.body.url;
 
@@ -92,7 +93,8 @@ function(req, res) {
         Links.create({
           url: uri,
           title: title,
-          baseUrl: req.headers.origin
+          baseUrl: req.headers.origin,
+          userId: req.session.userId
         })
         .then(function(newLink) {
           res.status(200).send(newLink);
