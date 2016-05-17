@@ -10,11 +10,10 @@ var User = db.Model.extend({
 
   initialize: function() {
     this.on('creating', function(model, attrs, options) {
-      // var shasum = crypto.createHash('sha1');
-      // shasum.update(model.get('url'));
-      // model.set('code', shasum.digest('hex').slice(0, 5));
-      // model.set('username', model.get('username'));
-      console.log('IN INITIALIZE');
+      var salt = bcrypt.genSaltSync(10);
+      console.log("PASSWORD", model.get( 'password'))
+      var hash = bcrypt.hashSync(model.get('password'), salt);
+      model.set('password', hash); // does this go into database before set?
     });
   }
 });

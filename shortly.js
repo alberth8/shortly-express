@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 // var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -59,12 +60,15 @@ function(req, res) {
   }
 });
 
+// displays api 
 app.get('/links', 
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     if (req.session.userId) {
-      console.log(links.models);
-      res.status(200).send(links.models); // only send current users link !
+      var usersContent = links.models.filter(function(obj) {        
+        return obj.get('userId') === req.session.userId;
+      });
+      res.status(200).send(usersContent); // only send current users link !
     } else { 
       res.redirect('/login');
     }
@@ -130,9 +134,13 @@ function(req, res) {
         password: password,
       })
       .then(function() {
-
-        res.redirect('/');
-        res.end();
+        // check database and get id that was assigned
+        new User({username: username}).fetch().then(function(found) {
+          // attach userId to session
+          req.session.userId = found.get('id');
+          res.redirect('/');
+          res.end();
+        });
       });
     }
   });
@@ -157,7 +165,8 @@ function(req, res) {
 
   var authenticate = function (password, storedUser) {
     // if entered password is same as what's in the server
-    if (password === storedUser.attributes.password) {
+
+    if (bcrypt.compareSync(password, storedUser.attributes.password)) {
       return true;
     } else {
       return false;
